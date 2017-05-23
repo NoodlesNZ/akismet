@@ -1,0 +1,24 @@
+{
+  "name" : "noodlesnz/akismet",
+  "description" : "The class in this package allows use of the Akismet anti-comment spam service.",
+  "type": "library",
+  "homepage" : "https://github.com/NoodlesNZ/akismet",
+  "license" : "BSD",
+  "authors" : [
+    {
+      "name": "Alex Potsides"
+    },
+    {
+    "name" : "Nick Le Mouton",
+    "email" : "nick@noodles.net.nz"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/NoodlesNZ/akismet/issues"
+  },
+  "autoload": {
+    "classmap": [
+      "src/"
+    ]
+  }
+}
