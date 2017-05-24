@@ -7,7 +7,6 @@
  *
  * @package	akismet
  * @name	SocketWriteReadFactory
- * @version	0.5
  * @author	Alex Potsides
  * @link	http://www.achingbrain.net/
  */

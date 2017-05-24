@@ -17,7 +17,6 @@
  *
  * @package		akismet
  * @author		Alex Potsides, {@link http://www.achingbrain.net http://www.achingbrain.net}
- * @version		0.5
  * @copyright	Alex Potsides, {@link http://www.achingbrain.net http://www.achingbrain.net}
  * @license		http://www.opensource.org/licenses/bsd-license.php BSD License
  */
@@ -57,7 +56,6 @@
  *
  * @package	akismet
  * @name	Akismet
- * @version	0.5
  * @author	Alex Potsides
  * @link	http://www.achingbrain.net/
  */

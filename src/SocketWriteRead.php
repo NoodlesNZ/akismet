@@ -10,7 +10,6 @@
  *
  * @package	akismet
  * @name	SocketWriteRead
- * @version	0.5
  * @author	Alex Potsides
  * @link	http://www.achingbrain.net/
  */

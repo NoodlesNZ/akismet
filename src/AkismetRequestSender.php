@@ -7,7 +7,6 @@
  *
  * @package	akismet
  * @name	AkismetRequestSender
- * @version	0.5
  * @author	Alex Potsides
  * @link	http://www.achingbrain.net/
  */
