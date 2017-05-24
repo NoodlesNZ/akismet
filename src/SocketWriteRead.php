@@ -14,7 +14,8 @@
  * @author	Alex Potsides
  * @link	http://www.achingbrain.net/
  */
-class SocketWriteRead implements AkismetRequestSender {
+class SocketWriteRead implements AkismetRequestSender
+{
   private $response;
   private $errorNumber;
   private $errorString;
@@ -34,7 +35,8 @@ class SocketWriteRead implements AkismetRequestSender {
    * @throws	An exception is thrown if a connection cannot be made to the remote host.
    * @returns	The server response
    */
-  public function send($host, $port, $request, $responseLength = 1160) {
+  public function send($host, $port, $request, $responseLength = 1160)
+  {
     $response = '';
     
     $fs = fsockopen($host, $port, $this->errorNumber, $this->errorString, 3);
@@ -61,7 +63,8 @@ class SocketWriteRead implements AkismetRequestSender {
    *
    * @return	string
    */
-  public function getResponse() {
+  public function getResponse()
+  {
     return $this->response;
   }
   
@@ -72,7 +75,8 @@ class SocketWriteRead implements AkismetRequestSender {
    *
    * @return int
    */
-  public function getErrorNumner() {
+  public function getErrorNumner()
+  {
     return $this->errorNumber;
   }
   
@@ -83,7 +87,8 @@ class SocketWriteRead implements AkismetRequestSender {
    *
    * @return string
    */
-  public function getErrorString() {
+  public function getErrorString()
+  {
     return $this->errorString;
   }
 }
