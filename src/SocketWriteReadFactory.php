@@ -11,9 +11,11 @@
  * @author	Alex Potsides
  * @link	http://www.achingbrain.net/
  */
-class SocketWriteReadFactory implements AkismetRequestFactory {
+class SocketWriteReadFactory implements AkismetRequestFactory
+{
   
-  public function createRequestSender() {
+  public function createRequestSender()
+  {
     return new SocketWriteRead();
   }
 }

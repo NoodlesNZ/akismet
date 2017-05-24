@@ -11,7 +11,8 @@
  * @author	Alex Potsides
  * @link	http://www.achingbrain.net/
  */
-interface AkismetRequestSender {
+interface AkismetRequestSender
+{
   
   /**
    *  Sends the data to the remote host.

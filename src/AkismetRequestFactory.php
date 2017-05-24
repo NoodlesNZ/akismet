@@ -11,7 +11,7 @@
  * @author	Alex Potsides
  * @link	http://www.achingbrain.net/
  */
-interface AkismetRequestFactory {
-  
+interface AkismetRequestFactory
+{
   public function createRequestSender();
 }

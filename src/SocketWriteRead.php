@@ -20,7 +20,8 @@ class SocketWriteRead implements AkismetRequestSender
   private $errorNumber;
   private $errorString;
   
-  public function __construct() {
+  public function __construct()
+  {
     $this->errorNumber = 0;
     $this->errorString = '';
   }
@@ -41,14 +42,14 @@ class SocketWriteRead implements AkismetRequestSender
     
     $fs = fsockopen($host, $port, $this->errorNumber, $this->errorString, 3);
     
-    if($this->errorNumber != 0) {
+    if ($this->errorNumber != 0) {
       throw new Exception('Error connecting to host: ' . $host . ' Error number: ' . $this->errorNumber . ' Error message: ' . $this->errorString);
     }
     
-    if($fs !== false) {
+    if ($fs !== false) {
       @fwrite($fs, $request);
       
-      while(!feof($fs)) {
+      while (!feof($fs)) {
         $response .= fgets($fs, $responseLength);
       }
       

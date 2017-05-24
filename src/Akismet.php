@@ -162,11 +162,12 @@
    // Formats the data for transmission
    private function getQueryString()
    {
-     foreach($_SERVER as $key => $value) {
-       if(!in_array($key, $this->ignore)) {
-         if($key == 'REMOTE_ADDR') {
+     foreach ($_SERVER as $key => $value) {
+       if (!in_array($key, $this->ignore)) {
+         if ($key == 'REMOTE_ADDR') {
            $this->comment[$key] = $this->comment['user_ip'];
-         } else {
+         }
+         else {
            $this->comment[$key] = $value;
          }
        }
@@ -174,8 +175,8 @@
      
      $query_string = '';
      
-     foreach($this->comment as $key => $data) {
-       if(!is_array($data)) {
+     foreach ($this->comment as $key => $data) {
+       if (!is_array($data)) {
          $query_string .= $key . '=' . urlencode(stripslashes($data)) . '&';
        }
      }
@@ -195,7 +196,7 @@
    {
      $response = $this->sendRequest($this->getQueryString(), $this->wordPressAPIKey . '.rest.akismet.com', '/' . $this->akismetVersion . '/comment-check');
      
-     if($response[1] == 'invalid' && !$this->isKeyValid()) {
+     if ($response[1] == 'invalid' && !$this->isKeyValid()) {
        throw new exception('The Wordpress API key passed to the Akismet constructor is invalid.  Please obtain a valid one from http://wordpress.com/api-keys/');
      }
      
