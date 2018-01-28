@@ -3,7 +3,7 @@
   "description" : "The class in this package allows use of the Akismet anti-comment spam service.",
   "type": "library",
   "homepage" : "https://github.com/NoodlesNZ/akismet",
-  "license" : "BSD",
+  "license" : "GPL-2.0-only",
   "authors" : [
     {
       "name": "Alex Potsides"
