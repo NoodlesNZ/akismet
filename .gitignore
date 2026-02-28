@@ -3,3 +3,4 @@
 .settings/org.eclipse.php.core.prefs
 vendor/
 build/
+.phpunit.result.cache

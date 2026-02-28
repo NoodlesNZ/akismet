@@ -6,7 +6,7 @@ class AkismetTest extends TestCase
   private $akismet;
   private $requestFactory;
   
-  protected function setUp()
+  protected function setUp() : void
   {
     $this->requestFactory = new MockRequestFactory();
     
