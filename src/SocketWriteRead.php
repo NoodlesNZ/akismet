@@ -1,4 +1,8 @@
 <?php
+
+declare(strict_types=1);
+
+namespace NoodlesNZ\Akismet;
 /**
  * Used internally by Akismet
  *
@@ -15,15 +19,11 @@
  */
 class SocketWriteRead implements AkismetRequestSender
 {
-  private $response;
-  private $errorNumber;
-  private $errorString;
+  private string $response = '';
+  private int $errorNumber = 0;
+  private string $errorString = '';
   
-  public function __construct()
-  {
-    $this->errorNumber = 0;
-    $this->errorString = '';
-  }
+  public function __construct() {}
   
   /**
    *  Sends the data to the remote host.
@@ -32,17 +32,22 @@ class SocketWriteRead implements AkismetRequestSender
    * @param	int		$port			The port on the remote host.
    * @param	string	$request		The data to send.
    * @param	int		$responseLength	The amount of data to read.  Defaults to 1160 bytes.
-   * @throws	An exception is thrown if a connection cannot be made to the remote host.
-   * @returns	The server response
+  * @throws \RuntimeException If a connection cannot be made to the remote host.
+  * @return string The server response
    */
-  public function send($host, $port, $request, $responseLength = 1160)
+  public function send(string $host, int $port, string $request, int $responseLength = 1160): string
   {
     $response = '';
-    
-    $fs = fsockopen($host, $port, $this->errorNumber, $this->errorString, 3);
-    
-    if ($this->errorNumber != 0) {
-      throw new Exception('Error connecting to host: ' . $host . ' Error number: ' . $this->errorNumber . ' Error message: ' . $this->errorString);
+
+    $errorNumber = 0;
+    $errorString = '';
+    $fs = fsockopen($host, $port, $errorNumber, $errorString, 3);
+
+    $this->errorNumber = $errorNumber;
+    $this->errorString = $errorString;
+
+    if ($this->errorNumber !== 0) {
+      throw new \RuntimeException('Error connecting to host: ' . $host . ' Error number: ' . $this->errorNumber . ' Error message: ' . $this->errorString);
     }
     
     if ($fs !== false) {
@@ -54,7 +59,9 @@ class SocketWriteRead implements AkismetRequestSender
       
       fclose($fs);
     }
-    
+
+    $this->response = $response;
+
     return $response;
   }
   
@@ -63,7 +70,7 @@ class SocketWriteRead implements AkismetRequestSender
    *
    * @return	string
    */
-  public function getResponse()
+  public function getResponse(): string
   {
     return $this->response;
   }
@@ -75,7 +82,7 @@ class SocketWriteRead implements AkismetRequestSender
    *
    * @return int
    */
-  public function getErrorNumner()
+  public function getErrorNumber(): int
   {
     return $this->errorNumber;
   }
@@ -87,7 +94,7 @@ class SocketWriteRead implements AkismetRequestSender
    *
    * @return string
    */
-  public function getErrorString()
+  public function getErrorString(): string
   {
     return $this->errorString;
   }

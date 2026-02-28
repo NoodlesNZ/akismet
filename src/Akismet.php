@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace NoodlesNZ\Akismet;
+
 /**
  * Akismet anti-comment spam service
  *
@@ -59,19 +63,23 @@
  * @author	Alex Potsides
  * @link	http://www.achingbrain.net/
  */
- class Akismet
- {
-   private $version = '0.5';
-   private $wordPressAPIKey;
-   private $blogURL;
-   private $comment;
-   private $apiPort;
-   private $akismetServer;
-   private $akismetVersion;
-   private $requestFactory;
+class Akismet
+{
+  private string $version = '0.5';
+  private string $wordPressAPIKey;
+  private string $blogURL;
+
+  /** @var array<string, mixed> */
+  private array $comment = [];
+  private int $apiPort;
+  private string $akismetServer;
+  private string $akismetVersion;
+  private AkismetRequestFactory $requestFactory;
    
    // This prevents some potentially sensitive information from being sent accross the wire.
-   private $ignore = array('HTTP_COOKIE',
+  /** @var array<int, string> */
+  private array $ignore = [
+    'HTTP_COOKIE',
      'HTTP_X_FORWARDED_FOR',
      'HTTP_X_FORWARDED_HOST',
      'HTTP_MAX_FORWARDS',
@@ -82,33 +90,34 @@
      'DOCUMENT_ROOT',
      'SERVER_ADMIN',
      'QUERY_STRING',
-     'PHP_SELF' );
+    'PHP_SELF',
+  ];
    
    /**
     * @param	string	$blogURL			The URL of your blog.
     * @param	string	$wordPressAPIKey	WordPress API key.
     */
-   public function __construct($blogURL, $wordPressAPIKey)
-   {
-     $this->blogURL = $blogURL;
-     $this->wordPressAPIKey = $wordPressAPIKey;
+  public function __construct(string $blogURL, string $wordPressAPIKey)
+  {
+    $this->blogURL = $blogURL;
+    $this->wordPressAPIKey = $wordPressAPIKey;
      
      // Set some default values
-     $this->apiPort = 80;
-     $this->akismetServer = 'rest.akismet.com';
-     $this->akismetVersion = '1.1';
-     $this->requestFactory = new SocketWriteReadFactory();
+    $this->apiPort = 80;
+    $this->akismetServer = 'rest.akismet.com';
+    $this->akismetVersion = '1.1';
+    $this->requestFactory = new SocketWriteReadFactory();
      
      // Start to populate the comment data
-     $this->comment['blog'] = $blogURL;
+    $this->comment['blog'] = $blogURL;
      
-     if (isset($_SERVER['HTTP_USER_AGENT'])) {
-       $this->comment['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-     }
+    if (isset($_SERVER['HTTP_USER_AGENT'])) {
+      $this->comment['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+    }
      
-     if (isset($_SERVER['HTTP_REFERER'])) {
-       $this->comment['referrer'] = $_SERVER['HTTP_REFERER'];
-     }
+    if (isset($_SERVER['HTTP_REFERER'])) {
+      $this->comment['referrer'] = $_SERVER['HTTP_REFERER'];
+    }
      
      /*
       * This is necessary if the server PHP5 is running on has been set up to run PHP4 and
@@ -118,13 +127,14 @@
       * Otherwise the user_ip appears as the IP address of the PHP4 server passing the requests to the
       * PHP5 one...
       */
-     if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != getenv('SERVER_ADDR')) {
-       $this->comment['user_ip'] = $_SERVER['REMOTE_ADDR'];
-     }
-     else {
-       $this->comment['user_ip'] = getenv('HTTP_X_FORWARDED_FOR');
-     }
-   }
+    if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] !== getenv('SERVER_ADDR')) {
+      $this->comment['user_ip'] = $_SERVER['REMOTE_ADDR'];
+      return;
+    }
+
+    $forwardedFor = getenv('HTTP_X_FORWARDED_FOR');
+    $this->comment['user_ip'] = $forwardedFor !== false ? $forwardedFor : '';
+  }
    
    /**
     * Makes a request to the Akismet service to see if the API key passed to the constructor is valid.
@@ -133,16 +143,17 @@
     *
     * @return bool	True is if the key is valid, false if not.
     */
-   public function isKeyValid()
-   {
+  public function isKeyValid(): bool
+  {
      // Check to see if the key is valid
      $response = $this->sendRequest('key=' . $this->wordPressAPIKey . '&blog=' . $this->blogURL, $this->akismetServer, '/' . $this->akismetVersion . '/verify-key');
-     return $response[1] == 'valid';
-   }
+    return trim($response[1]) === 'valid';
+  }
    
    // makes a request to the Akismet service
-   private function sendRequest($request, $host, $path)
-   {
+  /** @return array{0: string, 1: string} */
+  private function sendRequest(string $request, string $host, string $path): array
+  {
      $http_request  = "POST " . $path . " HTTP/1.0\r\n";
      $http_request .= "Host: " . $host . "\r\n";
      $http_request .= "Content-Type: application/x-www-form-urlencoded; charset=utf-8\r\n";
@@ -153,13 +164,17 @@
      
      $requestSender = $this->requestFactory->createRequestSender();
      $response = $requestSender->send($host, $this->apiPort, $http_request);
-     
-     return explode("\r\n\r\n", $response, 2);
-   }
+    
+    $parts = explode("\r\n\r\n", $response, 2);
+    $headers = $parts[0] ?? '';
+    $body = $parts[1] ?? '';
+
+    return [$headers, $body];
+  }
    
    // Formats the data for transmission
-   private function getQueryString()
-   {
+  private function getQueryString(): string
+  {
      foreach ($_SERVER as $key => $value) {
        if (!in_array($key, $this->ignore)) {
          if ($key == 'REMOTE_ADDR') {
@@ -173,14 +188,14 @@
      
      $query_string = '';
      
-     foreach ($this->comment as $key => $data) {
-       if (!is_array($data)) {
-         $query_string .= $key . '=' . urlencode(stripslashes($data)) . '&';
-       }
-     }
+    foreach ($this->comment as $key => $data) {
+      if (!is_array($data)) {
+        $query_string .= $key . '=' . urlencode(stripslashes((string) $data)) . '&';
+      }
+    }
      
      return $query_string;
-   }
+  }
    
    /**
     * Tests for spam.
@@ -188,156 +203,156 @@
     * Uses the web service provided by {@link http://www.akismet.com Akismet} to see whether or not the submitted comment is spam.  Returns a boolean value.
     *
     * @return	bool	True if the comment is spam, false if not
-    * @throws	Will throw an exception if the API key passed to the constructor is invalid.
+      * @throws \RuntimeException If the API key passed to the constructor is invalid.
     */
-   public function isCommentSpam()
-   {
-     $response = $this->sendRequest($this->getQueryString(), $this->wordPressAPIKey . '.rest.akismet.com', '/' . $this->akismetVersion . '/comment-check');
-     
-     if ($response[1] == 'invalid' && !$this->isKeyValid()) {
-       throw new exception('The Wordpress API key passed to the Akismet constructor is invalid.  Please obtain a valid one from http://wordpress.com/api-keys/');
-     }
-     
-     return ($response[1] == 'true');
-   }
+  public function isCommentSpam(): bool
+  {
+    $response = $this->sendRequest($this->getQueryString(), $this->wordPressAPIKey . '.' . $this->akismetServer, '/' . $this->akismetVersion . '/comment-check');
+
+    if (trim($response[1]) === 'invalid' && !$this->isKeyValid()) {
+      throw new \RuntimeException('The WordPress API key passed to the Akismet constructor is invalid. Please obtain a valid one from http://wordpress.com/api-keys/');
+    }
+
+    return trim($response[1]) === 'true';
+  }
    
    /**
     * Submit spam that is incorrectly tagged as ham.
     *
     * Using this function will make you a good citizen as it helps Akismet to learn from its mistakes.  This will improve the service for everybody.
     */
-   public function submitSpam()
-   {
+  public function submitSpam(): void
+  {
      $this->sendRequest($this->getQueryString(), $this->wordPressAPIKey . '.' . $this->akismetServer, '/' . $this->akismetVersion . '/submit-spam');
-   }
+  }
    
    /**
     * Submit ham that is incorrectly tagged as spam.
     *
     * Using this function will make you a good citizen as it helps Akismet to learn from its mistakes.  This will improve the service for everybody.
     */
-   public function submitHam()
-   {
+  public function submitHam(): void
+  {
      $this->sendRequest($this->getQueryString(), $this->wordPressAPIKey . '.' . $this->akismetServer, '/' . $this->akismetVersion . '/submit-ham');
-   }
+  }
    
    /**
     * To override the user IP address when submitting spam/ham later on
     *
     * @param string $userip	An IP address.  Optional.
     */
-   public function setUserIP($userip)
-   {
+  public function setUserIP(string $userip): void
+  {
      $this->comment['user_ip'] = $userip;
-   }
+  }
    
    /**
     * To override the referring page when submitting spam/ham later on
     *
     * @param string $referrer	The referring page.  Optional.
     */
-   public function setReferrer($referrer)
-   {
+  public function setReferrer(string $referrer): void
+  {
      $this->comment['referrer'] = $referrer;
-   }
+  }
    
    /**
     * A permanent URL referencing the blog post the comment was submitted to.
     *
     * @param string $permalink	The URL.  Optional.
     */
-   public function setPermalink($permalink)
-   {
+  public function setPermalink(string $permalink): void
+  {
      $this->comment['permalink'] = $permalink;
-   }
+  }
    
    /**
     * The type of comment being submitted.
     *
     * May be blank, comment, trackback, pingback, or a made up value like "registration" or "wiki".
     */
-   public function setCommentType($commentType)
-   {
+  public function setCommentType(string $commentType): void
+  {
      $this->comment['comment_type'] = $commentType;
-   }
+  }
    
    /**
     *	The name that the author submitted with the comment.
     */
-   public function setCommentAuthor($commentAuthor)
-   {
+  public function setCommentAuthor(string $commentAuthor): void
+  {
      $this->comment['comment_author'] = $commentAuthor;
-   }
+  }
    
    /**
     * The email address that the author submitted with the comment.
     *
     * The address is assumed to be valid.
     */
-   public function setCommentAuthorEmail($authorEmail)
-   {
+  public function setCommentAuthorEmail(string $authorEmail): void
+  {
      $this->comment['comment_author_email'] = $authorEmail;
-   }
+  }
    
    /**
     * The URL that the author submitted with the comment.
     */
-   public function setCommentAuthorURL($authorURL)
-   {
+  public function setCommentAuthorURL(string $authorURL): void
+  {
      $this->comment['comment_author_url'] = $authorURL;
-   }
+  }
    
    /**
     * The comment's body text.
     */
-   public function setCommentContent($commentBody)
-   {
+  public function setCommentContent(string $commentBody): void
+  {
      $this->comment['comment_content'] = $commentBody;
-   }
+  }
    
    /**
     * Lets you override the user agent used to submit the comment.
     * you may wish to do this when submitting ham/spam.
     * Defaults to $_SERVER['HTTP_USER_AGENT']
     */
-   public function setCommentUserAgent($userAgent)
-   {
+  public function setCommentUserAgent(string $userAgent): void
+  {
      $this->comment['user_agent'] = $userAgent;
-   }
+  }
    
    /**
     * Defaults to 80
     */
-   public function setAPIPort($apiPort)
-   {
+  public function setAPIPort(int $apiPort): void
+  {
      $this->apiPort = $apiPort;
-   }
+  }
    
    /**
     * Defaults to rest.akismet.com
     */
-   public function setAkismetServer($akismetServer)
-   {
+  public function setAkismetServer(string $akismetServer): void
+  {
      $this->akismetServer = $akismetServer;
-   }
+  }
    
    /**
     * Defaults to '1.1'
     *
     * @param string $akismetVersion
     */
-   public function setAkismetVersion($akismetVersion)
-   {
+  public function setAkismetVersion(string $akismetVersion): void
+  {
      $this->akismetVersion = $akismetVersion;
-   }
+  }
    
    /**
     * Used by unit tests to mock transport layer
     *
     * @param AkismetRequestFactory $requestFactory
     */
-   public function setRequestFactory($requestFactory)
-   {
+  public function setRequestFactory(AkismetRequestFactory $requestFactory): void
+  {
      $this->requestFactory = $requestFactory;
-   }
- }
+  }
+}

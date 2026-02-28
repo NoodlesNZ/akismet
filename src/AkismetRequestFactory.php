@@ -1,4 +1,8 @@
 <?php
+
+declare(strict_types=1);
+
+namespace NoodlesNZ\Akismet;
 /**
  * Used internally by the Akismet class and to mock the Akismet anti spam service in
  * the unit tests.
@@ -12,5 +16,5 @@
  */
 interface AkismetRequestFactory
 {
-  public function createRequestSender();
+  public function createRequestSender(): AkismetRequestSender;
 }

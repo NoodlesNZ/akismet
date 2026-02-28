@@ -1,4 +1,8 @@
 <?php
+
+declare(strict_types=1);
+
+namespace NoodlesNZ\Akismet;
 /**
  * Used internally by the Akismet class and to mock the Akismet anti spam service in
  * the unit tests.
@@ -13,7 +17,7 @@
 class SocketWriteReadFactory implements AkismetRequestFactory
 {
   
-  public function createRequestSender()
+  public function createRequestSender(): AkismetRequestSender
   {
     return new SocketWriteRead();
   }
